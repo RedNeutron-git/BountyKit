@@ -1,0 +1,46 @@
+{
+  "manifest_version": 2,
+  "name": "BountyKit",
+  "version": "1.0.0",
+  "description": "All-in-one bug bounty recon toolkit — passive & active scanning in your sidebar.",
+  "icons": {
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg"
+  },
+  "sidebar_action": {
+    "default_title": "BountyKit",
+    "default_panel": "sidebar.html",
+    "default_icon": "icons/icon.svg"
+  },
+  "browser_action": {
+    "default_title": "Toggle BountyKit Sidebar",
+    "default_icon": "icons/icon.svg"
+  },
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "permissions": [
+    "webRequest",
+    "webRequestBlocking",
+    "storage",
+    "tabs",
+    "activeTab",
+    "cookies",
+    "<all_urls>"
+  ],
+  "commands": {
+    "_execute_sidebar_action": {
+      "suggested_key": { "default": "Ctrl+Shift+Y" },
+      "description": "Toggle BountyKit sidebar"
+    }
+  }
+}

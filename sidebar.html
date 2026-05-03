@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>BountyKit</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap');
+
+    :root {
+      --bg:        #080b10;
+      --surface:   #0e1318;
+      --surface2:  #131920;
+      --border:    #1a2230;
+      --border2:   #243040;
+      --text:      #c8d8e8;
+      --text-dim:  #4a6070;
+      --text-mid:  #7890a0;
+      --hover:     #141e28;
+
+      --recon:     #38bdf8;
+      --tech:      #a78bfa;
+      --client:    #34d399;
+      --network:   #fb923c;
+      --security:  #f472b6;
+      --active:    #f87171;
+      --settings:  #64748b;
+
+      --high:   #f87171;
+      --medium: #fbbf24;
+      --low:    #34d399;
+      --info:   #38bdf8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    html, body {
+      height: 100%;
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ══════════════════════════════
+       TOP BANNER
+    ══════════════════════════════ */
+    .banner {
+      flex-shrink: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 14px 0;
+    }
+
+    .banner-row1 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .logo-icon {
+      width: 26px; height: 26px;
+      background: linear-gradient(135deg, var(--recon), var(--active));
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+    }
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px; font-weight: 800;
+      letter-spacing: 0.06em;
+    }
+    .logo-text span { color: var(--recon); }
+
+    .banner-actions {
+      display: flex; align-items: center; gap: 4px;
+    }
+    .btn-icon {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-dim); font-size: 13px;
+      padding: 4px 6px; border-radius: 5px;
+      transition: all 0.15s; font-family: 'JetBrains Mono', monospace;
+    }
+    .btn-icon:hover { color: var(--text); background: var(--hover); }
+    .btn-new-scan {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 4px 8px; border-radius: 5px;
+      border: 1px solid rgba(248,113,113,0.4);
+      color: var(--active); background: rgba(248,113,113,0.07);
+      cursor: pointer; transition: all 0.15s;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .btn-new-scan:hover { background: rgba(248,113,113,0.14); }
+
+    .banner-target {
+      font-size: 9px; color: var(--text-dim);
+      padding: 5px 0 8px;
+      letter-spacing: 0.04em;
+    }
+    .banner-target span {
+      color: var(--recon); font-weight: 600;
+      max-width: 220px; display: inline-block;
+      overflow: hidden; text-overflow: ellipsis;
+      white-space: nowrap; vertical-align: bottom;
+    }
+
+    /* ══════════════════════════════
+       MAIN LAYOUT
+    ══════════════════════════════ */
+    .layout {
+      display: flex;
+      flex: 1;
+      min-height: 0; /* critical for nested scroll */
+    }
+
+    /* ══════════════════════════════
+       NAV ICONS
+    ══════════════════════════════ */
+    .nav {
+      width: 44px; flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      align-items: center;
+      padding: 10px 0; gap: 2px;
+      overflow-y: auto;
+    }
+
+    .nav-btn {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 8px; cursor: pointer;
+      font-size: 16px; transition: all 0.15s;
+      border: 1px solid transparent;
+      position: relative; flex-shrink: 0;
+    }
+    .nav-btn:hover { background: var(--hover); }
+    .nav-btn.active { background: var(--hover); border-color: var(--border2); }
+
+    /* Badge count on icon */
+    .nav-badge {
+      position: absolute;
+      top: 2px; right: 2px;
+      min-width: 14px; height: 14px;
+      border-radius: 7px;
+      font-size: 8px; font-weight: 700;
+      display: none; align-items: center; justify-content: center;
+      padding: 0 3px;
+      line-height: 1;
+      border: 1px solid var(--bg);
+    }
+    .nav-badge.visible { display: flex; }
+
+    .nav-btn[data-panel="recon"]    .nav-badge { background: var(--recon);    color: #000; }
+    .nav-btn[data-panel="tech"]     .nav-badge { background: var(--tech);     color: #000; }
+    .nav-btn[data-panel="client"]   .nav-badge { background: var(--client);   color: #000; }
+    .nav-btn[data-panel="network"]  .nav-badge { background: var(--network);  color: #000; }
+    .nav-btn[data-panel="security"] .nav-badge { background: var(--security); color: #000; }
+    .nav-btn[data-panel="active"]   .nav-badge { background: var(--active);   color: #000; }
+
+    .nav-sep {
+      width: 26px; height: 1px;
+      background: var(--border); margin: 4px 0; flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════
+       CONTENT PANELS
+    ══════════════════════════════ */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      min-width: 0;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Panel header */
+    .panel-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 14px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 5;
+    }
+    .panel-dot {
+      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    }
+    .panel-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .panel-count {
+      margin-left: auto;
+      font-size: 9px; font-weight: 600;
+      padding: 1px 7px; border-radius: 10px;
+      background: rgba(255,255,255,0.06); color: var(--text-dim);
+    }
+
+    /* Panel color accents */
+    .panel-recon    .panel-dot { background: var(--recon);    box-shadow: 0 0 6px var(--recon); }
+    .panel-tech     .panel-dot { background: var(--tech);     box-shadow: 0 0 6px var(--tech); }
+    .panel-client   .panel-dot { background: var(--client);   box-shadow: 0 0 6px var(--client); }
+    .panel-network  .panel-dot { background: var(--network);  box-shadow: 0 0 6px var(--network); }
+    .panel-security .panel-dot { background: var(--security); box-shadow: 0 0 6px var(--security); }
+    .panel-active   .panel-dot { background: var(--active);   box-shadow: 0 0 6px var(--active); }
+    .panel-settings .panel-dot { background: var(--settings); box-shadow: 0 0 6px var(--settings); }
+
+    .panel-recon    .panel-title { color: var(--recon); }
+    .panel-tech     .panel-title { color: var(--tech); }
+    .panel-client   .panel-title { color: var(--client); }
+    .panel-network  .panel-title { color: var(--network); }
+    .panel-security .panel-title { color: var(--security); }
+    .panel-active   .panel-title { color: var(--active); }
+    .panel-settings .panel-title { color: var(--settings); }
+
+    /* ══════════════════════════════
+       SECTIONS
+    ══════════════════════════════ */
+    .section { border-bottom: 1px solid var(--border); }
+
+    .section-title {
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 14px;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-dim);
+      cursor: pointer; transition: background 0.1s;
+      user-select: none;
+    }
+    .section-title:hover { background: var(--hover); }
+    .section-badge {
+      margin-left: auto;
+      font-size: 9px; padding: 0 5px;
+      border-radius: 8px; background: rgba(255,255,255,0.06);
+      color: var(--text-dim);
+    }
+    .chevron { font-size: 8px; transition: transform 0.2s; }
+    .section-title.collapsed .chevron { transform: rotate(-90deg); }
+    .section-body.hidden { display: none; }
+
+    /* ══════════════════════════════
+       ROW ITEMS
+    ══════════════════════════════ */
+    .row-item {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 6px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.025);
+      transition: background 0.1s;
+    }
+    .row-item:hover { background: var(--hover); }
+    .row-item:hover .row-copy { opacity: 1; }
+
+    .row-main { flex: 1; min-width: 0; }
+    .row-text {
+      font-size: 10px; color: var(--text);
+      word-break: break-all; line-height: 1.5;
+    }
+    .row-meta {
+      font-size: 9px; color: var(--text-dim);
+      margin-top: 2px; line-height: 1.4;
+      word-break: break-all;
+    }
+
+    .row-copy {
+      opacity: 0; flex-shrink: 0;
+      background: var(--border); border: none;
+      color: var(--text-dim); padding: 2px 5px;
+      border-radius: 3px; cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px; font-weight: 600;
+      transition: opacity 0.15s; align-self: flex-start;
+    }
+    .row-copy.copied { color: var(--low); opacity: 1; }
+
+    /* ══════════════════════════════
+       BADGES
+    ══════════════════════════════ */
+    .badge {
+      display: inline-block;
+      font-size: 8px; font-weight: 700;
+      padding: 1px 4px; border-radius: 3px;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      margin-right: 2px;
+    }
+    .badge-method  { background: rgba(56,189,248,0.12);  color: var(--recon); }
+    .badge-high    { background: rgba(248,113,113,0.12); color: var(--high); }
+    .badge-medium  { background: rgba(251,191,36,0.12);  color: var(--medium); }
+    .badge-low     { background: rgba(52,211,153,0.12);  color: var(--low); }
+    .badge-info    { background: rgba(56,189,248,0.12);  color: var(--info); }
+    .badge-cdn     { background: rgba(251,191,36,0.12);  color: var(--medium); }
+    .badge-waf     { background: rgba(248,113,113,0.12); color: var(--high); }
+    .badge-tag     { background: rgba(255,255,255,0.06); color: var(--text-dim); }
+
+    /* ══════════════════════════════
+       EMPTY STATE
+    ══════════════════════════════ */
+    .empty-state {
+      padding: 16px 14px; text-align: center;
+      color: var(--text-dim); font-size: 9px; line-height: 1.8;
+    }
+
+    /* ══════════════════════════════
+       PROTOCOL CARDS
+    ══════════════════════════════ */
+    .proto-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 6px; padding: 10px 14px;
+    }
+    .proto-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px; padding: 8px 10px;
+    }
+    .proto-card.full { grid-column: 1 / -1; }
+    .proto-card.warn { border-color: var(--high); background: rgba(248,113,113,0.05); }
+    .proto-card.safe { border-color: var(--low);  background: rgba(52,211,153,0.05); }
+    .proto-label {
+      font-size: 8px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text-dim); margin-bottom: 4px;
+    }
+    .proto-value {
+      font-size: 11px; font-weight: 600; color: var(--text);
+      word-break: break-all; line-height: 1.4;
+    }
+    .proto-value.green { color: var(--low); }
+    .proto-value.red   { color: var(--high); }
+    .proto-value.blue  { color: var(--recon); }
+    .proto-value.warn  { color: var(--medium); }
+
+    /* ══════════════════════════════
+       QUALYS
+    ══════════════════════════════ */
+    .qualys-loading {
+      text-align: center; padding: 20px 14px;
+    }
+    .qualys-spinner {
+      width: 22px; height: 22px; margin: 0 auto 10px;
+      border: 2px solid var(--border);
+      border-top-color: var(--recon); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .qualys-status { font-size: 10px; color: var(--recon); margin-bottom: 4px; }
+    .qualys-timer  { font-size: 9px;  color: var(--text-dim); }
+
+    .qualys-grade-hero {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px;
+    }
+    .qualys-grade {
+      width: 46px; height: 46px; flex-shrink: 0;
+      border: 2px solid; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 700;
+    }
+    .qualys-grade-label { font-size: 8px; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; }
+    .qualys-grade-host  { font-size: 10px; font-weight: 600; margin: 2px 0; }
+    .qualys-grade-time  { font-size: 9px; color: var(--text-dim); }
+
+    .qualys-error {
+      margin: 8px 14px; padding: 10px 12px;
+      background: rgba(248,113,113,0.06);
+      border: 1px solid rgba(248,113,113,0.2);
+      border-radius: 7px; font-size: 10px;
+      color: var(--high); line-height: 1.6;
+    }
+
+    /* ══════════════════════════════
+       ACTIVE SCAN BUTTONS
+    ══════════════════════════════ */
+    .scan-btn {
+      display: flex; align-items: center; gap: 8px;
+      margin: 8px 14px 4px;
+      padding: 9px 14px; border-radius: 7px;
+      cursor: pointer; font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 600;
+      border: 1px solid; transition: all 0.15s;
+      background: transparent; width: calc(100% - 28px);
+    }
+    .scan-btn:hover { filter: brightness(1.2); }
+    .scan-btn.red  { border-color: rgba(248,113,113,0.4); color: var(--high);  background: rgba(248,113,113,0.06); }
+    .scan-btn.blue { border-color: rgba(56,189,248,0.4);  color: var(--recon); background: rgba(56,189,248,0.06); }
+
+    .scan-note {
+      margin: 0 14px 10px;
+      font-size: 9px; color: var(--text-dim); line-height: 1.5;
+    }
+
+    /* ══════════════════════════════
+       DIVIDER
+    ══════════════════════════════ */
+    .divider {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px 4px;
+      font-size: 8px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .divider::before, .divider::after {
+      content: ""; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ══════════════════════════════
+       SETTINGS
+    ══════════════════════════════ */
+    .setting-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.025);
+      font-size: 10px;
+    }
+    .toggle {
+      width: 30px; height: 16px; border-radius: 8px;
+      background: var(--border2); position: relative;
+      cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+    }
+    .toggle.on { background: var(--low); }
+    .toggle::after {
+      content: ""; position: absolute; top: 2px; left: 2px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: white; transition: left 0.2s;
+    }
+    .toggle.on::after { left: 16px; }
+
+    /* ══════════════════════════════
+       CREDIT
+    ══════════════════════════════ */
+    .credit {
+      text-align: center; padding: 5px;
+      font-size: 8px; color: var(--text-dim);
+      border-top: 1px solid var(--border);
+      background: var(--surface); flex-shrink: 0;
+      letter-spacing: 0.1em;
+    }
+    .credit span { color: var(--recon); font-weight: 700; }
+  </style>
+</head>
+<body>
+
+<!-- ── BANNER ── -->
+<div class="banner">
+  <div class="banner-row1">
+    <div class="logo">
+      <div class="logo-icon">🎯</div>
+      <div class="logo-text">Bounty<span>Kit</span></div>
+    </div>
+    <div class="banner-actions">
+      <button class="btn-new-scan" id="btnNewScan">⚡ New Scan</button>
+      <button class="btn-icon" id="btnExport" title="Export all data">⬇</button>
+      <button class="btn-icon" id="btnClear"  title="Clear data">🗑</button>
+    </div>
+  </div>
+  <div class="banner-target">target: <span id="targetUrl">—</span></div>
+</div>
+
+<!-- ── MAIN LAYOUT ── -->
+<div class="layout">
+
+  <!-- Nav icons -->
+  <div class="nav">
+    <div class="nav-btn active" data-panel="recon"    title="Recon">🗺️
+      <div class="nav-badge" id="nb-recon"></div>
+    </div>
+    <div class="nav-btn" data-panel="tech"     title="Technology">🔬
+      <div class="nav-badge" id="nb-tech"></div>
+    </div>
+    <div class="nav-btn" data-panel="client"   title="Client Data">🍪
+      <div class="nav-badge" id="nb-client"></div>
+    </div>
+    <div class="nav-btn" data-panel="network"  title="Network">🌐
+      <div class="nav-badge" id="nb-network"></div>
+    </div>
+    <div class="nav-btn" data-panel="security" title="Security">🛡️
+      <div class="nav-badge" id="nb-security"></div>
+    </div>
+    <div class="nav-sep"></div>
+    <div class="nav-btn" data-panel="active"   title="Active Scans">⚡
+      <div class="nav-badge" id="nb-active"></div>
+    </div>
+    <div class="nav-btn" data-panel="settings" title="Settings">⚙️</div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- ── RECON ── -->
+    <div class="panel panel-recon active" id="panel-recon">
+      <div class="panel-header">
+        <div class="panel-dot"></div>
+        <div class="panel-title">Recon</div>
+        <div class="panel-count" id="pc-recon">0</div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="paths"><span class="chevron">▾</span> Paths & Endpoints <span class="section-badge" id="sb-paths">0</span></div>
+        <div class="section-body" id="sb-body-paths"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="external"><span class="chevron">▾</span> External Requests <span class="section-badge" id="sb-external">0</span></div>
+        <div class="section-body" id="sb-body-external"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="subdomains"><span class="chevron">▾</span> Subdomains <span class="section-badge" id="sb-subdomains">0</span></div>
+        <div class="section-body" id="sb-body-subdomains"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="params"><span class="chevron">▾</span> Parameters <span class="section-badge" id="sb-params">0</span></div>
+        <div class="section-body" id="sb-body-params"></div>
+      </div>
+    </div>
+
+    <!-- ── TECHNOLOGY ── -->
+    <div class="panel panel-tech" id="panel-tech">
+      <div class="panel-header">
+        <div class="panel-dot"></div>
+        <div class="panel-title">Technology</div>
+        <div class="panel-count" id="pc-tech">0</div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="techs"><span class="chevron">▾</span> Detected Technologies <span class="section-badge" id="sb-techs">0</span></div>
+        <div class="section-body" id="sb-body-techs"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="protocol"><span class="chevron">▾</span> Protocol & SSL/TLS <span class="section-badge" id="sb-protocol">—</span></div>
+        <div class="section-body" id="sb-body-protocol"></div>
+      </div>
+    </div>
+
+    <!-- ── CLIENT DATA ── -->
+    <div class="panel panel-client" id="panel-client">
+      <div class="panel-header">
+        <div class="panel-dot"></div>
+        <div class="panel-title">Client Data</div>
+        <div class="panel-count" id="pc-client">0</div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="cookies"><span class="chevron">▾</span> Cookies <span class="section-badge" id="sb-cookies">0</span></div>
+        <div class="section-body" id="sb-body-cookies"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="localstorage"><span class="chevron">▾</span> localStorage <span class="section-badge" id="sb-localstorage">0</span></div>
+        <div class="section-body" id="sb-body-localstorage"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="sessionstorage"><span class="chevron">▾</span> sessionStorage <span class="section-badge" id="sb-sessionstorage">0</span></div>
+        <div class="section-body" id="sb-body-sessionstorage"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="postmessages"><span class="chevron">▾</span> postMessage Events <span class="section-badge" id="sb-postmessages">0</span></div>
+        <div class="section-body" id="sb-body-postmessages"></div>
+      </div>
+    </div>
+
+    <!-- ── NETWORK ── -->
+    <div class="panel panel-network" id="panel-network">
+      <div class="panel-header">
+        <div class="panel-dot"></div>
+        <div class="panel-title">Network</div>
+        <div class="panel-count" id="pc-network">0</div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="cors"><span class="chevron">▾</span> CORS Headers <span class="section-badge" id="sb-cors">0</span></div>
+        <div class="section-body" id="sb-body-cors"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="redirects"><span class="chevron">▾</span> Redirects <span class="section-badge" id="sb-redirects">0</span></div>
+        <div class="section-body" id="sb-body-redirects"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="errors"><span class="chevron">▾</span> Error Responses (4xx/5xx) <span class="section-badge" id="sb-errors">0</span></div>
+        <div class="section-body" id="sb-body-errors"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="websockets"><span class="chevron">▾</span> WebSockets <span class="section-badge" id="sb-websockets">0</span></div>
+        <div class="section-body" id="sb-body-websockets"></div>
+      </div>
+    </div>
+
+    <!-- ── SECURITY ── -->
+    <div class="panel panel-security" id="panel-security">
+      <div class="panel-header">
+        <div class="panel-dot"></div>
+        <div class="panel-title">Security</div>
+        <div class="panel-count" id="pc-security">0</div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="forms"><span class="chevron">▾</span> Forms & CSRF <span class="section-badge" id="sb-forms">0</span></div>
+        <div class="section-body" id="sb-body-forms"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="csp"><span class="chevron">▾</span> CSP Analysis <span class="section-badge" id="sb-csp">—</span></div>
+        <div class="section-body" id="sb-body-csp"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="graphql"><span class="chevron">▾</span> GraphQL <span class="section-badge" id="sb-graphql">0</span></div>
+        <div class="section-body" id="sb-body-graphql"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="idors"><span class="chevron">▾</span> IDOR Candidates <span class="section-badge" id="sb-idors">0</span></div>
+        <div class="section-body" id="sb-body-idors"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="clickjack"><span class="chevron">▾</span> Clickjacking <span class="section-badge" id="sb-clickjack">—</span></div>
+        <div class="section-body" id="sb-body-clickjack"></div>
+      </div>
+      <div class="section">
+        <div class="section-title" data-sec="protopollution"><span class="chevron">▾</span> Prototype Pollution <span class="section-badge" id="sb-protopollution">0</span></div>
+        <div class="section-body" id="sb-body-protopollution"></div>
+      </div>
+    </div>
+
+    <!-- ── ACTIVE SCANS ── -->
+    <div class="panel panel-active" id="panel-active">
+      <div class="panel-header">
+        <div class="panel-dot"></div>
+        <div class="panel-title">Active Scans</div>
+        <div class="panel-count">Manual</div>
+      </div>
+      <div class="divider"><span>SSL Deep Scan</span></div>
+      <div id="qualys-section"></div>
+      <div class="divider"><span>File Discovery</span></div>
+      <button class="scan-btn red" id="btnSensitiveFiles">🔍 Scan Sensitive Files</button>
+      <div class="scan-note">Probes .env, .git, backup files, admin panels, swagger, phpinfo, etc.</div>
+      <div id="sensitive-results"></div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="panel panel-settings" id="panel-settings">
+      <div class="panel-header">
+        <div class="panel-dot"></div>
+        <div class="panel-title">Settings</div>
+      </div>
+      <div class="setting-row">
+        <span>Auto-refresh (3s)</span>
+        <div class="toggle on" id="tog-autorefresh"></div>
+      </div>
+      <div class="setting-row">
+        <span>Passive modules</span>
+        <div class="toggle on" id="tog-passive"></div>
+      </div>
+      <div style="padding:10px 14px">
+        <button class="scan-btn blue" style="margin:0;width:100%" id="btnExportFull">⬇ Export All (TXT)</button>
+      </div>
+      <div class="setting-row" style="margin-top:4px;border-top:1px solid var(--border)">
+        <span style="color:var(--text-dim)">BountyKit v1.0 — Phase 1</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Credit -->
+<div class="credit">by <span>RedNeutron</span></div>
+
+<script src="sidebar.js"></script>
+</body>
+</html>
