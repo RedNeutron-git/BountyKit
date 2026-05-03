@@ -209,14 +209,7 @@ All passive modules + Qualys SSL deep scan + Sensitive file discovery
 
 ---
 
-## 👤 Author
-
-**RedNeutron**
-
 > Built for the community. Hunt responsibly. 🎯
 
 ---
 
-## 📄 License
-
-MIT License — free to use, modify, and distribute with attribution.
